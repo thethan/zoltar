@@ -1,7 +1,6 @@
 <?php
 namespace App\Zoltar\Resources;
 
-use App\Zoltar\Resources\Model;
 
 trait All {
 

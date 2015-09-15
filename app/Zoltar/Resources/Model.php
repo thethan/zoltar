@@ -9,14 +9,32 @@ class Model
 {
     use All;
 
+    /**
+     * @var Service to be called.
+     *
+     */
     protected $service;
-
+    /**
+     * Simple method of the service
+     * @var
+     */
     protected $method;
 
+    /**
+     * service is expecting
+     * @var
+     */
     protected $class;
-
+    /**
+     * What needs to be called for this case of Authentication
+     * @var
+     */
     protected $headers;
 
+    /**
+     * Where the API is located
+     * @var
+     */
     protected $uri;
 
     protected $wish;
@@ -25,6 +43,10 @@ class Model
 
     protected $body;
 
+    /**
+     * What needs to be returned
+     * @var
+     */
     public $status, $errors;
 
     /**
@@ -43,7 +65,6 @@ class Model
     {
         $this->$class = $class;
         $this->status = 400;
-        $this->body = null;
         $this->errors = null;
 
     }
@@ -54,18 +75,29 @@ class Model
         $this->method = 'GET';
     }
 
+    /**
+     * Sets the primary Identifier based on how the model is set up
+     * @param $id
+     */
     protected function setPrimaryIdentifier($id)
     {
         $this->parameters[$this->primaryIdentifier] = $id;
     }
 
+    /**
+     * Sets the parameters of the where Query
+     * @param $parameter
+     * @param $id
+     */
     protected function setParameters($parameter, $id)
     {
         $this->parameters[$parameter] = $id;
     }
 
-
-
+    /**
+     * Write the find method to get a specific identifier
+     * @param $id
+     */
     public static function find($id)
     {
         Model::setPrimaryIdentifier($id);
@@ -75,6 +107,8 @@ class Model
     }
 
     /**
+     * Make a where function to easily search the database
+     *
      * @param $parameter
      * @param $id
      * @todo add opperators ('=', '<','>','>=','<=')
@@ -84,6 +118,10 @@ class Model
         Model::setParameters($parameter,$id);
     }
 
+    /**
+     * Save either PUT or POST the information
+     * @param $class
+     */
     public function save($class)
     {
         if(isset($this->$class->{$this->primaryIdentifier})){
@@ -92,6 +130,7 @@ class Model
             $this->method = 'POST';
         }
 
+        // call the service
         $this->makeAWish();
 
     }
@@ -112,23 +151,28 @@ class Model
 
     }
 
-
+    /**
+     * set the Ticket and status to be used.
+     * @param Response $response
+     */
     private function makeTicket(Response $response)
     {
         $this->ticket = $response;
         $this->status = $response->getStatusCode();
     }
 
-    private function getStatus()
-    {
-        return $this->ticket->getStatusCode();
-    }
-
+    /**
+     * Get Body and Contents of the Ticket
+     * @return mixed
+     */
     private function readTicket()
     {
         return $this->ticket->getBody()->getContents();
     }
 
+    /**
+     * Check to see if you get the right response and then set the call's errors or body
+     */
     private function setExpectations()
     {
 
@@ -141,6 +185,10 @@ class Model
         }
     }
 
+    /**
+     * If the request has errors they need to be set to the errors @param errors
+     * @return mixed
+     */
     private function readErrors()
     {
         $errors = $this->readTicket();
@@ -149,11 +197,15 @@ class Model
         return $errors->message;
     }
 
+    /**
+     * Make the whole ticket readable by for either a variable or an ajax call
+     * @return ReturnResponse
+     */
     private function reviewTicket()
     {
         $ticket = json_decode($this->readTicket());
-        $app = app();
-        $obj = $app->make('stdClass');
+
+        $obj = new ReturnResponse($this->class);
         $obj->status = $this->status;
         $obj->errors = $this->errors;
 
@@ -163,14 +215,9 @@ class Model
 
     }
 
-    private function bodyToClass()
-    {
-
-        $class = $this->class;
-        $this->$class = $this->body;
-
-    }
-
+    /**
+     * Turn the body into an error
+     */
     private function bodyToErrors()
     {
         $this->readErrors();
@@ -178,10 +225,14 @@ class Model
 
     }
 
+    /**
+     * Function that make things happen
+     * @return ReturnResponse
+     */
     private function reviewDestiny()
     {
-
         $this->setExpectations();
         return $this->reviewTicket();
     }
+
 }

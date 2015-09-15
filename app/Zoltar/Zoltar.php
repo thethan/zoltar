@@ -96,12 +96,4 @@ class Zoltar implements ServiceInterface
     }
 
 
-    public function printTicket(Response $response)
-    {
-        $this->response = $response;
-        $this->status = $response->getStatusCode();
-        
-
-        return json($this->response->getBody()->getContents());
-    }
 }

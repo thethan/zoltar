@@ -1,7 +1,7 @@
 <?php
 
-namespace App\Zoltar;
-use GuzzleHttp\Psr7\Response;
+namespace App\Zoltar\Resources;
+use Illuminate\Http\Response;
 
 
 /**
@@ -13,7 +13,7 @@ class ReturnResponse
 {
     public $errors;
 
-    public $static;
+    public $status;
 
     public $class;
 
@@ -29,5 +29,11 @@ class ReturnResponse
     }
 
     public function ajaxResponse()
-    {}
+    {
+        if($this->status >= 400){
+            return ( new Response(array($this->errors, $this->{$this->class}->$this->class), $this->status))
+                ->header('Content-Type', 'application/json');
+        }
+        return new Response($this->{$this->class},$this->status);
+    }
 }
