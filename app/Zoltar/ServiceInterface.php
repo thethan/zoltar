@@ -11,7 +11,7 @@ interface ServiceInterface
      * @param $method string
      * @param $parameters array
      */
-    public function __construct($service, $url, $method, $parameters, $header);
+    public function __construct($service, $url, $method, $parameters, $header, $body);
 
     /**
      * Run the Service

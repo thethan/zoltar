@@ -2,6 +2,8 @@
 
 namespace App\Zoltar;
 
+use GuzzleHttp\Psr7\Response;
+
 
 trait GetResponseBody
 {

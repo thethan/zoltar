@@ -19,21 +19,18 @@ class File extends Model
 
     protected $wish = 200;
 
-    public function __construct()
-    {
 
-    }
 
     public function allCategories(){
         $this->class = 'CategoryFolders';
         $this->uri = '/category';
         $response = parent::all();
-        return $response->ajaxResponse();
+        return $response;
 
     }
 
-    public function allFiles($personId){
-
+    public function allFiles($personId)
+    {
         $this->class = 'DigitalFiles';
         $this->uri = '/file?PersonId=[::personId::]';
         $this->parameters = ['personId' => $personId];

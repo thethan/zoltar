@@ -6,8 +6,7 @@ use App;
 use Auth;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
-use Symfony\Component\HttpFoundation;
+
 
 
 class Zoltar implements ServiceInterface
@@ -23,6 +22,8 @@ class Zoltar implements ServiceInterface
      * @var url To Service
      */
     public $url;
+
+    public $body;
 
     /**
      * @param version
@@ -43,17 +44,19 @@ class Zoltar implements ServiceInterface
      * @param $method
      * @param array $parameters
      */
-    public function __construct($service, $uri, $method, $parameters = array(), $headers)
+    public function __construct($service, $uri, $method, $parameters = array(), $headers, $body)
     {
+        $this->setHeader($headers);
 
-        $this->headers = $headers;
         $this->method = $method;
-        $url = "http://".config(
-                App::environment().'.service.base').config('service.'.$service)."srv.edudyn.com";
+        $this->body = json_encode($body);
+        $url = config('service.protocol').config(
+                App::environment().'.service.base').config('service.'.$service).config('service.url');
         $this->url = $url.$uri;
         if(!empty($parameters)){
             $this->updateUrl($parameters);
         }
+
     }
 
     /**
@@ -71,16 +74,18 @@ class Zoltar implements ServiceInterface
      * Get the headers
      * @return array
      */
-    protected function setHeader()
+    protected function setHeader($headers)
     {
-        $return = array();
-        $return['Content-Type'] = 'application/json';
-        foreach($this->headers as $key => $value){
 
-            $return[$value] = Auth::user()->$value;
+        if(is_array($headers)){
+            $headers['Content-Type'] = 'application/json';
+            $this->headers = $headers;
+            return;
         }
 
-        return $return;
+        $this->headers = ['Content-Type' => 'application/json'];
+        return;
+
     }
 
     /**
@@ -88,8 +93,9 @@ class Zoltar implements ServiceInterface
      */
     public function speaks()
     {
-        $client = new Client();
-        $request = new Request($this->method, $this->url, $this->setHeader(), array());
+        $client = new Client(['exceptions' => false]);
+        $request = new Request($this->method, $this->url, $this->headers, $this->body);
+
         $response =  $client->send($request);
 
         return $response;
